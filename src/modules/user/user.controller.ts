@@ -1,11 +1,11 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
 
+import { GetUserDto } from './dto';
 import { UserService } from './user.service';
 
 import { Response } from '../../common/interfaces';
 import { GetUser } from '../auth/decorator';
 import { JwtGuard } from '../auth/guard';
-import { GetUserDto } from './dto';
 
 @UseGuards(JwtGuard)
 @Controller('users')

@@ -8,6 +8,8 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
 
 import { User } from './modules/user/user.entity';
+import { Wallet } from './modules/wallet/wallet.entity';
+import { WalletModule } from './modules/wallet/wallet.module';
 
 @Module({
   imports: [
@@ -22,12 +24,13 @@ import { User } from './modules/user/user.entity';
         username: config.get<string>(EnvVariables.POSTGRES_USER),
         password: config.get<string>(EnvVariables.POSTGRES_PASSWORD),
         database: config.get<string>(EnvVariables.POSTGRES_DB),
-        entities: [User],
+        entities: [User, Wallet],
         synchronize: true,
       }),
     }),
     AuthModule,
     UserModule,
+    WalletModule,
   ],
 })
 export class AppModule {}
