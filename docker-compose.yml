@@ -7,10 +7,8 @@ networks:
 services:
   finance-helper-postgres:
     image: postgres
-    environment:
-      POSTGRES_DB: 'postgres'
-      POSTGRES_USER: 'root'
-      POSTGRES_PASSWORD: 'pass'
+    env_file:
+      - .env.db
     ports:
       - '5432:5432'
     networks:

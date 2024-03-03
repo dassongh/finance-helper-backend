@@ -15,7 +15,7 @@ export class DatabaseExceptionFilter implements ExceptionFilter {
     if (exception instanceof EntityNotFoundError) {
       return response.code(404).send(this.getResponse('Entity not found', 'Not Found', 404));
     }
-    console.error(exception);
+
     const code = exception.driverError.code;
     const exceptionEntityOptions = {
       [DatabaseExceptionFilter.UNIQUE_VIOLATION]: this.getResponse('Duplicate unique key', 'Conflict', 409),

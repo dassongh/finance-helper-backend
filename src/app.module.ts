@@ -2,10 +2,12 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 
-import { User } from './modules/user/user.entity';
+import { EnvVariables } from './common/constants';
 
 import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
+
+import { User } from './modules/user/user.entity';
 
 @Module({
   imports: [
@@ -15,11 +17,11 @@ import { UserModule } from './modules/user/user.module';
       inject: [ConfigService],
       useFactory: async (config: ConfigService): Promise<TypeOrmModuleOptions> => ({
         type: 'postgres',
-        host: config.get<string>('POSTGRES_HOST'),
-        port: config.get<number>('POSTGRES_PORT'),
-        username: config.get<string>('POSTGRES_USER'),
-        password: config.get<string>('POSTGRES_PASSWORD'),
-        database: config.get<string>('POSTGRES_DB'),
+        host: config.get<string>(EnvVariables.POSTGRES_HOST),
+        port: config.get<number>(EnvVariables.POSTGRES_PORT),
+        username: config.get<string>(EnvVariables.POSTGRES_USER),
+        password: config.get<string>(EnvVariables.POSTGRES_PASSWORD),
+        database: config.get<string>(EnvVariables.POSTGRES_DB),
         entities: [User],
         synchronize: true,
       }),

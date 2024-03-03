@@ -5,10 +5,11 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 
-import { TokenType } from './auth.constants';
 import { TokenData, TokenPayload } from './auth.interfaces';
+import { TokenType } from './constants';
 import { SignInDto, SignUpDto } from './dto';
 
+import { EnvVariables } from '../../common/constants';
 import { GetUserDto } from '../user/dto';
 import { UserRepository } from '../user/user.repository';
 
@@ -50,15 +51,15 @@ export class AuthService {
   }
 
   private hashPassword(password: string): Promise<string> {
-    return promisify(pbkdf2)(password, this.config.get('PASSWORD_SALT'), 1000, 64, 'sha512').then(hash =>
+    return promisify(pbkdf2)(password, this.config.get(EnvVariables.PASSWORD_SALT), 1000, 64, 'sha512').then(hash =>
       hash.toString('hex')
     );
   }
 
-  private signTokens(tokenPayload: TokenPayload, tokenType: TokenType): Promise<string> {
+  private signTokens(tokenPayload: TokenPayload, tokenType: keyof typeof TokenType): Promise<string> {
     const options = {
-      [TokenType.ACCESS]: { secret: this.config.get('ACCESS_TOKEN_SECRET'), expiresIn: '24h' },
-      [TokenType.REFRESH]: { secret: this.config.get('REFRESH_TOKEN_SECRET'), expiresIn: '30d' },
+      [TokenType.ACCESS]: { secret: this.config.get(EnvVariables.ACCESS_TOKEN_SECRET), expiresIn: '24h' },
+      [TokenType.REFRESH]: { secret: this.config.get(EnvVariables.REFRESH_TOKEN_SECRET), expiresIn: '30d' },
     };
 
     return this.jwtService.signAsync(tokenPayload, options[tokenType]);
