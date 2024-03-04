@@ -1,12 +1,17 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
+import { User } from '../user/user.entity';
 import { CurrencyType, WalletType } from './constants';
 
 @Entity()
+@Unique(['userId', 'name'])
 export class Wallet {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ unique: true })
+  @Column()
+  userId: number;
+
+  @Column()
   name: string;
 
   @Column()
@@ -18,7 +23,7 @@ export class Wallet {
   @Column({ type: 'enum', enum: CurrencyType })
   currency: CurrencyType;
 
-  @Column()
+  @Column({ nullable: true })
   description: string;
 
   @CreateDateColumn()
@@ -26,4 +31,7 @@ export class Wallet {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @ManyToOne(() => User, user => user.wallets, { onDelete: 'CASCADE' })
+  user: User;
 }
