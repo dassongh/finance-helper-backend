@@ -1,12 +1,13 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
 
-import { CreateWalletDto } from './dto';
+import { CreateWalletDto, UpdateWalletDto } from './dto';
 import { WalletService } from './wallet.service';
 
 import { GetUser } from '../auth/decorator';
 import { JwtGuard } from '../auth/guard';
 
 import { GetPagination } from '../../common/decorator';
+import { FindOneParams } from '../../common/dto';
 import { Pagination } from '../../common/interfaces';
 
 @UseGuards(JwtGuard)
@@ -27,8 +28,20 @@ export class WalletController {
   }
 
   @Get('/:id')
-  public async getById(@GetUser('id') userId: number, @Param('id') walletId: number) {
-    const wallet = await this.walletService.getById(userId, walletId);
+  public async getById(@GetUser('id') userId: number, @Param() { id }: FindOneParams) {
+    const wallet = await this.walletService.getById(userId, id);
     return { data: wallet };
+  }
+
+  @Put('/:id')
+  public async update(@GetUser('id') userId: number, @Param() { id }: FindOneParams, @Body() dto: UpdateWalletDto) {
+    const wallet = await this.walletService.update(userId, id, dto);
+    return { data: wallet };
+  }
+
+  @Delete('/:id')
+  public async delete(@GetUser('id') userId: number, @Param() { id }: FindOneParams) {
+    await this.walletService.delete(userId, id);
+    return { status: 'ok' };
   }
 }

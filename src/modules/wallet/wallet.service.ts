@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Pagination } from '../../common/interfaces';
-import { CreateWalletDto } from './dto';
+import { CreateWalletDto, UpdateWalletDto } from './dto';
 import { WalletRepository } from './wallet.repository';
 
 @Injectable()
@@ -27,5 +27,18 @@ export class WalletService {
   public async getById(userId: number, walletId: number) {
     const wallet = await this.walletRepository.findOne({ where: { id: walletId, userId } });
     return wallet;
+  }
+
+  public async update(userId: number, walletId: number, dto: UpdateWalletDto) {
+    const wallet = await this.walletRepository.findOneOrFail({ where: { id: walletId, userId } });
+
+    const payload = { ...wallet, ...dto };
+    const walletUpdated = await this.walletRepository.save(payload);
+
+    return walletUpdated;
+  }
+
+  public delete(userId: number, walletId: number) {
+    return this.walletRepository.delete({ id: walletId, userId });
   }
 }

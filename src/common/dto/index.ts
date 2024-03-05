@@ -1,2 +1,1 @@
-export * from './base-param.dto';
-export * from './base-query.dto';
+export * from './find-one-params.dto';

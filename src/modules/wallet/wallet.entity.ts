@@ -1,4 +1,14 @@
-import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  Unique,
+  UpdateDateColumn,
+} from 'typeorm';
+
 import { User } from '../user/user.entity';
 import { CurrencyType, WalletType } from './constants';
 
@@ -9,6 +19,7 @@ export class Wallet {
   id: number;
 
   @Column()
+  @Index()
   userId: number;
 
   @Column()
