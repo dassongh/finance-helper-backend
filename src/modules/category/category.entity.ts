@@ -9,14 +9,13 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import { WalletType } from './constants';
-
 import { CurrencyType } from '../../common/constants';
 import { User } from '../user/user.entity';
+import { CategoryType } from './constants';
 
 @Entity()
 @Unique(['userId', 'name'])
-export class Wallet {
+export class Category {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -27,17 +26,11 @@ export class Wallet {
   @Column()
   name: string;
 
-  @Column()
-  color: string;
-
-  @Column({ type: 'enum', enum: WalletType })
-  type: WalletType;
+  @Column({ type: 'enum', enum: CategoryType })
+  type: CategoryType;
 
   @Column({ type: 'enum', enum: CurrencyType })
   currency: CurrencyType;
-
-  @Column({ nullable: true })
-  description: string;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -45,6 +38,6 @@ export class Wallet {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => User, user => user.wallets, { onDelete: 'CASCADE' })
+  @ManyToOne(() => User, user => user.categories, { onDelete: 'CASCADE' })
   user: User;
 }

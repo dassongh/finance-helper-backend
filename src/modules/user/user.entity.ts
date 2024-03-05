@@ -1,4 +1,6 @@
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+
+import { Category } from '../category/category.entity';
 import { Wallet } from '../wallet/wallet.entity';
 
 @Entity()
@@ -23,4 +25,7 @@ export class User {
 
   @OneToMany(() => Wallet, wallet => wallet.user)
   wallets: Wallet[];
+
+  @OneToMany(() => Category, category => category.user)
+  categories: Category[];
 }

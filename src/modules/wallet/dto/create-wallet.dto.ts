@@ -1,5 +1,7 @@
 import { IsEnum, IsNotEmpty, IsOptional, IsString, Matches } from 'class-validator';
-import { CurrencyType, WalletType } from '../constants';
+
+import { CurrencyType } from '../../../common/constants';
+import { WalletType } from '../constants';
 
 export class CreateWalletDto {
   @IsString()
