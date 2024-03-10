@@ -6,10 +6,12 @@ import { EnvVariables } from './common/constants';
 
 import { AuthModule } from './modules/auth/auth.module';
 import { CategoryModule } from './modules/category/category.module';
+import { SessionModule } from './modules/session/session.module';
 import { UserModule } from './modules/user/user.module';
 import { WalletModule } from './modules/wallet/wallet.module';
 
 import { Category } from './modules/category/category.entity';
+import { Session } from './modules/session/session.entity';
 import { User } from './modules/user/user.entity';
 import { Wallet } from './modules/wallet/wallet.entity';
 
@@ -26,7 +28,7 @@ import { Wallet } from './modules/wallet/wallet.entity';
         username: config.get<string>(EnvVariables.POSTGRES_USER),
         password: config.get<string>(EnvVariables.POSTGRES_PASSWORD),
         database: config.get<string>(EnvVariables.POSTGRES_DB),
-        entities: [User, Wallet, Category],
+        entities: [User, Wallet, Category, Session],
         synchronize: true,
       }),
     }),
@@ -34,6 +36,7 @@ import { Wallet } from './modules/wallet/wallet.entity';
     UserModule,
     WalletModule,
     CategoryModule,
+    SessionModule,
   ],
 })
 export class AppModule {}

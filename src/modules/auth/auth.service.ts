@@ -1,22 +1,24 @@
 import { pbkdf2 } from 'node:crypto';
 import { promisify } from 'node:util';
 
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 
-import { TokenData, TokenPayload } from './auth.interfaces';
 import { TokenType } from './constants';
 import { SignInDto, SignUpDto } from './dto';
+import { TokenData, TokenPayload } from './interfaces';
 
 import { EnvVariables } from '../../common/constants';
+import { SessionService } from '../session/session.service';
 import { GetUserDto } from '../user/dto';
-import { UserRepository } from '../user/user.repository';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private userRepository: UserRepository,
+    private userService: UserService,
+    private sessionService: SessionService,
     private jwtService: JwtService,
     private config: ConfigService
   ) {}
@@ -27,25 +29,69 @@ export class AuthService {
       password: await this.hashPassword(dto.password),
     };
 
-    const user = await this.userRepository.save(payload);
+    const user = await this.userService.createUser(payload);
     return { id: user.id, name: user.name, email: user.email };
   }
 
-  public async signIn(dto: SignInDto): Promise<TokenData> {
-    const user = await this.userRepository.findOneBy({ email: dto.email });
+  public async signIn(clientId: string, dto: SignInDto): Promise<TokenData> {
+    const user = await this.userService.getUserByEmail(dto.email);
     if (!user) {
-      throw new ForbiddenException('Credentials incorrect');
+      throw new UnauthorizedException('Credentials incorrect');
     }
 
     const passwordHash = await this.hashPassword(dto.password);
     if (passwordHash !== user.password) {
-      throw new ForbiddenException('Credentials incorrect');
+      throw new UnauthorizedException('Credentials incorrect');
     }
 
     const tokens = {
       access: await this.signTokens({ sub: user.id }, TokenType.ACCESS),
       refresh: await this.signTokens({ sub: user.id }, TokenType.REFRESH),
     };
+
+    const sessionPayload = {
+      userId: user.id,
+      clientId,
+      refreshToken: tokens.refresh,
+    };
+    await this.sessionService.createOrUpdate(sessionPayload);
+
+    return tokens;
+  }
+
+  public signOut(clientId: string, userId: number) {
+    return this.sessionService.delete(userId, clientId);
+  }
+
+  public async updateTokens(clientId: string, refreshToken: string) {
+    let payload: TokenPayload;
+    try {
+      payload = await this.jwtService.verifyAsync(refreshToken, {
+        secret: this.config.get(EnvVariables.REFRESH_TOKEN_SECRET),
+      });
+    } catch (error) {
+      throw new UnauthorizedException('Refresh token invalid');
+    }
+
+    const session = await this.sessionService.get(payload.sub, clientId);
+    if (!session) {
+      throw new UnauthorizedException('Refresh token invalid');
+    }
+    if (session.refreshToken !== refreshToken) {
+      throw new UnauthorizedException('Refresh token invalid');
+    }
+
+    const tokens = {
+      access: await this.signTokens({ sub: payload.sub }, TokenType.ACCESS),
+      refresh: await this.signTokens({ sub: payload.sub }, TokenType.REFRESH),
+    };
+
+    const updatePayload = {
+      userId: payload.sub,
+      clientId,
+      refreshToken: tokens.refresh,
+    };
+    await this.sessionService.createOrUpdate(updatePayload);
 
     return tokens;
   }
@@ -56,7 +102,7 @@ export class AuthService {
     );
   }
 
-  private signTokens(tokenPayload: TokenPayload, tokenType: keyof typeof TokenType): Promise<string> {
+  private signTokens(tokenPayload: TokenPayload, tokenType: TokenType): Promise<string> {
     const options = {
       [TokenType.ACCESS]: { secret: this.config.get(EnvVariables.ACCESS_TOKEN_SECRET), expiresIn: '24h' },
       [TokenType.REFRESH]: { secret: this.config.get(EnvVariables.REFRESH_TOKEN_SECRET), expiresIn: '30d' },
